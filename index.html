@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="A tested step-by-step guide to running Windows Steam games on an Apple Silicon Mac with Whisky, including the graphics and audio fixes.">
+<title>Windows Steam on Apple Silicon</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+  :root {
+    --ground:      #EDEFEF;
+    --surface:     #FFFFFF;
+    --surface-alt: #E4E7E7;
+    --line:        #C9CFCF;
+    --line-soft:   #DDE1E1;
+    --ink:         #14191B;
+    --ink-soft:    #4C5658;
+    --ink-faint:   #6E797B;
+    --accent:      #8A6414;
+    --accent-soft: #F3E9D2;
+    --warn:        #9E3A2B;
+    --warn-soft:   #F7E4E0;
+    --ok:          #0D6154;
+    --ok-soft:     #DDEDEA;
+    --code-bg:     #1A1F22;
+    --code-ink:    #DCE3E4;
+    --code-line:   #2C3438;
+
+    --w: 74ch;
+    --step: clamp(1rem, 0.7rem + 1vw, 1.35rem);
+    color-scheme: light dark;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:      #0E1214;
+      --surface:     #161B1E;
+      --surface-alt: #1E2528;
+      --line:        #2E3639;
+      --line-soft:   #232B2E;
+      --ink:         #E2E7E8;
+      --ink-soft:    #A3AFB1;
+      --ink-faint:   #7B8688;
+      --accent:      #D9A441;
+      --accent-soft: #2B2314;
+      --warn:        #E08573;
+      --warn-soft:   #2E1A16;
+      --ok:          #5FC0AE;
+      --ok-soft:     #122A26;
+      --code-bg:     #0A0D0F;
+      --code-ink:    #D6DEDF;
+      --code-line:   #222A2D;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground:      #0E1214;
+    --surface:     #161B1E;
+    --surface-alt: #1E2528;
+    --line:        #2E3639;
+    --line-soft:   #232B2E;
+    --ink:         #E2E7E8;
+    --ink-soft:    #A3AFB1;
+    --ink-faint:   #7B8688;
+    --accent:      #D9A441;
+    --accent-soft: #2B2314;
+    --warn:        #E08573;
+    --warn-soft:   #2E1A16;
+    --ok:          #5FC0AE;
+    --ok-soft:     #122A26;
+    --code-bg:     #0A0D0F;
+    --code-ink:    #D6DEDF;
+    --code-line:   #222A2D;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 16px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: var(--w);
+    margin: 0 auto;
+    padding: 0 1.5rem 6rem;
+  }
+
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* ---------- masthead ---------- */
+
+  .masthead {
+    border-bottom: 3px solid var(--ink);
+    padding: 3.5rem 0 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .eyebrow {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 0.9rem;
+  }
+  h1 {
+    font-family: "Barlow Condensed", "Helvetica Neue", sans-serif;
+    font-weight: 700;
+    font-size: clamp(2.6rem, 1.6rem + 4.4vw, 4.2rem);
+    line-height: 0.95;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    text-wrap: balance;
+    margin: 0 0 0.6rem;
+  }
+  .standfirst {
+    font-size: 1.1rem;
+    color: var(--ink-soft);
+    margin: 0;
+    max-width: 58ch;
+  }
+
+  /* ---------- spec strip ---------- */
+
+  .spec {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    margin: 2rem 0 3rem;
+  }
+  .spec div { background: var(--surface); padding: 0.7rem 0.85rem; }
+  .spec dt {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 0.15rem;
+  }
+  .spec dd {
+    margin: 0;
+    font-weight: 500;
+    font-size: 0.95rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- generic type ---------- */
+
+  h2 {
+    font-family: "Barlow Condensed", "Helvetica Neue", sans-serif;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    font-size: 1.9rem;
+    line-height: 1.1;
+    text-wrap: balance;
+    margin: 0 0 0.75rem;
+  }
+  h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 2rem 0 0.5rem;
+  }
+  p { margin: 0 0 1rem; }
+  p:last-child { margin-bottom: 0; }
+  strong { font-weight: 600; }
+
+  section { margin-bottom: 3.25rem; }
+
+  /* ---------- steps ---------- */
+
+  .step {
+    display: grid;
+    grid-template-columns: 3.25rem 1fr;
+    gap: 0 1rem;
+    margin-bottom: 3.25rem;
+    border-top: 1px solid var(--line);
+    padding-top: 1.5rem;
+  }
+  .step-num {
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 700;
+    font-size: 2.2rem;
+    line-height: 1;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+    padding-top: 0.1rem;
+  }
+  .step-body > *:first-child { margin-top: 0; }
+  @media (max-width: 560px) {
+    .step { grid-template-columns: 1fr; gap: 0.35rem; }
+    .step-num { font-size: 1.5rem; }
+  }
+
+  /* ---------- code ---------- */
+
+  pre {
+    background: var(--code-bg);
+    color: var(--code-ink);
+    border: 1px solid var(--code-line);
+    padding: 0.9rem 1rem;
+    overflow-x: auto;
+    margin: 1rem 0;
+    font-size: 0.83rem;
+    line-height: 1.6;
+  }
+  pre, code { font-family: "IBM Plex Mono", ui-monospace, "SF Mono", monospace; }
+  code {
+    font-size: 0.87em;
+    background: var(--surface-alt);
+    padding: 0.1em 0.35em;
+    border-radius: 2px;
+  }
+  pre code { background: none; padding: 0; font-size: inherit; color: inherit; }
+
+  /* ---------- callouts: stripe encodes severity ---------- */
+
+  .note {
+    border-left: 3px solid var(--accent);
+    background: var(--accent-soft);
+    padding: 0.85rem 1rem;
+    margin: 1.25rem 0;
+    font-size: 0.94rem;
+  }
+  .note.warn { border-left-color: var(--warn); background: var(--warn-soft); }
+  .note.ok   { border-left-color: var(--ok);   background: var(--ok-soft); }
+  .note .tag {
+    display: block;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.63rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 0.3rem;
+    color: var(--ink-soft);
+  }
+  .note p { margin-bottom: 0.6rem; }
+  .note p:last-child { margin-bottom: 0; }
+
+  /* ---------- tables ---------- */
+
+  .tablewrap { overflow-x: auto; margin: 1.25rem 0; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.9rem;
+    min-width: 30rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.55rem 0.7rem;
+    border-bottom: 1px solid var(--line-soft);
+    vertical-align: top;
+  }
+  thead th {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.66rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    border-bottom: 1px solid var(--line);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td code { white-space: nowrap; }
+
+  ul, ol { margin: 0 0 1rem; padding-left: 1.2rem; }
+  li { margin-bottom: 0.4rem; }
+
+  /* ---------- contents ---------- */
+
+  nav.toc {
+    border: 1px solid var(--line);
+    background: var(--surface);
+    padding: 1rem 1.15rem;
+    margin-bottom: 3.5rem;
+  }
+  nav.toc p {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 0.6rem;
+  }
+  nav.toc ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.15rem 1.5rem;
+    counter-reset: toc;
+  }
+  nav.toc li {
+    margin: 0;
+    counter-increment: toc;
+    font-size: 0.92rem;
+  }
+  nav.toc li::before {
+    content: counter(toc, decimal-leading-zero);
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.72rem;
+    color: var(--ink-faint);
+    margin-right: 0.5rem;
+  }
+  nav.toc a { color: var(--ink); text-decoration: none; }
+  nav.toc a:hover { color: var(--accent); text-decoration: underline; }
+
+  footer {
+    border-top: 1px solid var(--line);
+    margin-top: 4rem;
+    padding-top: 1.25rem;
+    font-size: 0.85rem;
+    color: var(--ink-faint);
+  }
+  footer ul { padding-left: 1.1rem; }
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="eyebrow">Field guide · Wine on macOS · September 2026</p>
+    <h1>Windows Steam on Apple Silicon</h1>
+    <p class="standfirst">Getting the Windows Steam client and a Direct3D&nbsp;12 game running on an M-series Mac with Whisky — including the two failures that cost me an evening: a bottle that vanished, and audio that was silently muted by a USB headset.</p>
+  </header>
+
+  <dl class="spec">
+    <div><dt>Machine</dt><dd>Mac mini M4</dd></div>
+    <div><dt>macOS</dt><dd>26.6.2</dd></div>
+    <div><dt>Whisky</dt><dd>3.7.0 (fork)</dd></div>
+    <div><dt>Game</dt><dd>Commandos: Origins</dd></div>
+    <div><dt>Result</dt><dd>Playable</dd></div>
+  </dl>
+
+  <nav class="toc">
+    <p>Contents</p>
+    <ol>
+      <li><a href="#before">Before you start</a></li>
+      <li><a href="#install">Install the right Whisky</a></li>
+      <li><a href="#pin">Pin the version</a></li>
+      <li><a href="#bottle">Create the bottle</a></li>
+      <li><a href="#client">Settings for the Steam client</a></li>
+      <li><a href="#steam">Install Steam</a></li>
+      <li><a href="#library">Reuse an existing library</a></li>
+      <li><a href="#graphics">Graphics for the game</a></li>
+      <li><a href="#audio">Fix the audio</a></li>
+      <li><a href="#trouble">Troubleshooting</a></li>
+      <li><a href="#recovery">Recovering a lost bottle</a></li>
+    </ol>
+  </nav>
+
+  <section id="before">
+    <h2>Before you start</h2>
+    <p>Three things decide whether this is worth your evening.</p>
+
+    <p><strong>Check the game first.</strong> Look it up on <a href="https://www.protondb.com/">ProtonDB</a>. Gold or Platinum means it runs well under Wine; anything with EasyAntiCheat or BattlEye will not run at all, on any Wine-based route, and no configuration changes that. Commandos: Origins is rated Platinum, which is why it was a reasonable target.</p>
+
+    <p><strong>The original Whisky is dead.</strong> Isaac Marovitz ended development in April 2025 and pointed users at CrossOver. What is still maintained is the community fork at <a href="https://github.com/frankea/Whisky">frankea/Whisky</a>, which is what this guide uses. The plain <code>brew install --cask whisky</code> still installs the archived original — don't use it.</p>
+
+    <p><strong>This road has an expiry date.</strong> Apple has said macOS 27 is the last release with Rosetta, after which only a narrow set of legacy game frameworks keeps working. The x86 Wine-under-Rosetta approach ends there. Native ARM64 work is underway — CodeWeavers has a CrossOver preview built on it — but it is not finished. Set your expectations accordingly.</p>
+
+    <div class="note warn">
+      <span class="tag">Cost of the free route</span>
+      <p>CrossOver is the paid, maintained version of the same underlying technology, and its developers do the Wine work everyone else benefits from. If this setup becomes something you use regularly, buying it is the honest move.</p>
+    </div>
+  </section>
+
+  <div class="step" id="install">
+    <div class="step-num">01</div>
+    <div class="step-body">
+      <h2>Install the right Whisky</h2>
+      <pre><code>brew install --cask frankea/whisky/whisky</code></pre>
+      <p>Install it to <code>/Applications</code>. Do not keep the app on an external drive: if the volume is unmounted, renamed, or swept by a sync client, the app disappears mid-session and every bottle it manages appears broken. The app is 22&nbsp;MB. Your bottles and games are the large things, and they can live elsewhere.</p>
+    </div>
+  </div>
+
+  <div class="step" id="pin">
+    <div class="step-num">02</div>
+    <div class="step-body">
+      <h2>Pin the version</h2>
+      <p>Whisky ships updates through Sparkle, and an update can break a working setup — 3.7.0 changed the graphics backend defaults to Metal&nbsp;4 command encoding with MetalFX on, and made the per-bottle graphics setting actually apply for the first time. That is a good change, and it can also silently switch a bottle onto a backend the Steam client cannot draw with.</p>
+      <p>Once you have a configuration that works, stop the nagging:</p>
+      <pre><code>BID=$(defaults read /Applications/Whisky.app/Contents/Info CFBundleIdentifier)
+defaults write "$BID" SUEnableAutomaticChecks -bool false
+defaults write "$BID" SUAutomaticallyUpdate  -bool false</code></pre>
+      <p>And keep a way back. This script installs any tagged release, backs up the current app first, and clears the quarantine flag:</p>
+      <pre><code>#!/bin/bash
+set -euo pipefail
+
+APP="${APP:-/Applications/Whisky.app}"
+REPO="${REPO:-frankea/Whisky}"
+TAG="${1:-}"
+
+if [ -z "$TAG" ]; then
+  echo "available tags in $REPO:"
+  curl -fsSL "https://api.github.com/repos/$REPO/releases?per_page=30" \
+    | grep -o '"tag_name": *"[^"]*"' | cut -d'"' -f4
+  echo; echo "usage: $0 &lt;tag&gt;"; exit 0
+fi
+
+URL=$(curl -fsSL "https://api.github.com/repos/$REPO/releases/tags/$TAG" \
+  | grep -oE '"browser_download_url": *"[^"]+\.(dmg|zip)"' | cut -d'"' -f4 \
+  | grep -viE 'source|librar' | head -1)
+[ -n "$URL" ] || { echo "no app asset found for $TAG"; exit 1; }
+
+osascript -e 'quit app "Whisky"' 2>/dev/null || true; sleep 2
+
+TMP=$(mktemp -d); FILE="$TMP/$(basename "$URL")"
+if [ -d "$APP" ]; then
+  OLD=$(defaults read "$APP/Contents/Info" CFBundleShortVersionString 2>/dev/null || echo unknown)
+  echo "current: $OLD -> backing up"
+  rm -rf "$HOME/Whisky-backup-$OLD.app"
+  ditto "$APP" "$HOME/Whisky-backup-$OLD.app"
+fi
+curl -fL# "$URL" -o "$FILE"
+
+case "$FILE" in
+  *.dmg)
+    MNT=$(hdiutil attach -nobrowse -readonly "$FILE" | grep -o '/Volumes/.*' | head -1)
+    rm -rf "$APP"; ditto "$MNT/Whisky.app" "$APP"
+    hdiutil detach "$MNT" -quiet ;;
+  *.zip)
+    ditto -x -k "$FILE" "$TMP/x"
+    rm -rf "$APP"; ditto "$TMP/x/Whisky.app" "$APP" ;;
+esac
+
+xattr -dr com.apple.quarantine "$APP" || true
+rm -rf "$TMP"
+echo "done: $(defaults read "$APP/Contents/Info" CFBundleShortVersionString)"</code></pre>
+      <p>Save it, <code>chmod +x</code> it, then run it with no arguments to list releases, or with a tag such as <code>app-v3.7.0</code> to install one.</p>
+      <div class="note">
+        <span class="tag">Paste carefully</span>
+        <p>Write the script to a file with a quoted heredoc (<code>cat &gt; f.sh &lt;&lt;'EOF'</code>). Pasting a multi-line script straight into zsh runs it line by line, which is how you end up deleting an app before the line that reinstalls it.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="step" id="bottle">
+    <div class="step-num">03</div>
+    <div class="step-body">
+      <h2>Create the bottle</h2>
+      <p>A bottle is a Wine prefix — a self-contained fake Windows install. Keep it on your internal disk. It is only a couple of gigabytes on its own, and putting it on an external volume adds a failure mode for nothing: unmount the drive while Whisky is running and the bottle can be left inconsistent.</p>
+      <p>Set the Windows version to <strong>Windows 10</strong>, not 11. Steam's own documentation for this fork uses Windows 10 as the baseline, and it avoids a class of version-detection oddities.</p>
+      <p>Game files do not need to be in the bottle. A Steam library folder can sit on any external APFS volume and be added to Steam later — that is how you keep a 37&nbsp;GB game off a 109&nbsp;GB boot disk.</p>
+    </div>
+  </div>
+
+  <div class="step" id="client">
+    <div class="step-num">04</div>
+    <div class="step-body">
+      <h2>Settings for the Steam client</h2>
+      <p>The Steam client and the game want opposite graphics settings. Configure the client first, get logged in, then flip the graphics for play. These are the client settings:</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Setting</th><th>Value</th><th>Why</th></tr></thead>
+          <tbody>
+            <tr><td>Launcher Compatibility Mode</td><td>On</td><td>Added in 3.6.0; applies the fork's Steam profile</td></tr>
+            <tr><td>Detection Mode</td><td>Automatic</td><td>Lets it identify Steam by itself</td></tr>
+            <tr><td>Locale Override</td><td>English (en_US.UTF-8)</td><td>steamwebhelper crashes parsing dates in some locales</td></tr>
+            <tr><td>Windows Version</td><td>Windows 10</td><td>Documented baseline</td></tr>
+            <tr><td>DXVK</td><td>On</td><td>Makes the client UI usable</td></tr>
+            <tr><td>D3DMetal / MetalFX</td><td>Off</td><td>Not needed by the client; a source of blank windows</td></tr>
+            <tr><td>Network timeout</td><td>90&nbsp;s or more</td><td>Stops downloads dropping</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>And three environment variables on the bottle:</p>
+      <pre><code>LC_ALL=en_US.UTF-8
+STEAM_DISABLE_CEF_SANDBOX=1
+WINE_FORCE_HTTP11=1</code></pre>
+      <p>The first two are what the fork's own launcher documentation requires. The third works around Wine's HTTP/2 implementation, which is the reason Steam downloads famously stall at 99%.</p>
+    </div>
+  </div>
+
+  <div class="step" id="steam">
+    <div class="step-num">05</div>
+    <div class="step-body">
+      <h2>Install Steam</h2>
+      <p>Whisky 3.7.0 has launcher profiles for Steam, Epic, EA, Battle.net and others — if there is a one-click Steam option in your build, use it. Otherwise fetch the Windows installer and run it inside the bottle:</p>
+      <pre><code>curl -L -o ~/Downloads/SteamSetup.exe \
+  https://cdn.cloudflare.steamstatic.com/client/installer/SteamSetup.exe</code></pre>
+      <p>Expect the client UI to feel sluggish. That is normal and says nothing about how the games will run — the launcher is a Chromium app being translated twice over, while the game talks to the GPU almost directly.</p>
+    </div>
+  </div>
+
+  <div class="step" id="library">
+    <div class="step-num">06</div>
+    <div class="step-body">
+      <h2>Reuse an existing library</h2>
+      <p>If you have ever downloaded the game before — under CrossOver, an older bottle, a second drive — do not let Steam download it again. Steam recognises any folder that contains a <code>steamapps</code> directory. Add it under <em>Settings → Storage → Add Drive</em>, pointing at the folder above <code>steamapps</code>.</p>
+      <p>Check the manifest before and after. A fully installed game reads <code>StateFlags 4</code>, with the two byte counts equal:</p>
+      <pre><code>grep -E "name|StateFlags|BytesDownloaded|BytesToDownload" \
+  "/path/to/library/steamapps/appmanifest_1479730.acf"</code></pre>
+      <pre><code>"name"              "Commandos: Origins"
+"StateFlags"        "4"
+"BytesToDownload"   "15994471216"
+"BytesDownloaded"   "15994471216"</code></pre>
+      <p>The number in the filename is the Steam AppID — 1479730 here. If Steam has already begun re-downloading into a new library, you can copy the complete game folder into that library's <code>common</code> directory and use <em>Verify integrity of game files</em>; Steam checksums what is there instead of fetching it again.</p>
+    </div>
+  </div>
+
+  <div class="step" id="graphics">
+    <div class="step-num">07</div>
+    <div class="step-body">
+      <h2>Graphics for the game</h2>
+      <p>Now invert the client settings. This is the part most guides get wrong:</p>
+      <div class="note">
+        <span class="tag">The rule</span>
+        <p><strong>DXVK does not implement Direct3D&nbsp;12.</strong> It covers D3D9 through D3D11. Any modern D3D12 title — most Unreal Engine 5 games, Commandos: Origins included — needs D3DMetal, Apple's Game Porting Toolkit translation layer.</p>
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Setting</th><th>Steam client</th><th>D3D12 game</th></tr></thead>
+          <tbody>
+            <tr><td>DXVK</td><td>On</td><td>Off</td></tr>
+            <tr><td>D3DMetal</td><td>Off</td><td>On</td></tr>
+            <tr><td>MetalFX</td><td>Off</td><td>On, unless unstable</td></tr>
+            <tr><td>DirectX Raytracing</td><td>Off</td><td>Off to start</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>If the game launches to a black window or crashes on start, turn MetalFX off first — it is the newest code in the stack. Some Unreal titles also accept <code>-dx11</code> as a Steam launch option, which puts you back on the DXVK path and is worth trying if D3DMetal misbehaves.</p>
+    </div>
+  </div>
+
+  <div class="step" id="audio">
+    <div class="step-num">08</div>
+    <div class="step-body">
+      <h2>Fix the audio</h2>
+      <p>The game ran perfectly and was completely silent. This one is worth knowing about because it produces no error anywhere.</p>
+      <p>First, isolate the layer. In the bottle, run <code>winecfg</code>, open the <strong>Audio</strong> tab and use its test button. macOS-level sound working while Wine's test is silent means the problem is Wine's CoreAudio driver, not the game and not your Mac.</p>
+      <p>Then look at your output device's sample rates:</p>
+      <pre><code>system_profiler SPAudioDataType | grep -A6 -i "output\|default"</code></pre>
+      <p>The culprit in my case was a USB speakerphone reporting <strong>48000&nbsp;Hz output and 16000&nbsp;Hz input</strong>. Wine's CoreAudio driver opens both directions when it initialises, and the mismatch leaves it producing nothing at all, silently.</p>
+      <p><strong>The fix that worked:</strong> switch the Mac's output to a device whose rates agree — the built-in speakers, at a straight 48000&nbsp;Hz — and relaunch. Sound came back immediately.</p>
+      <p>If you want to keep using the headset, two things are worth trying, though I have not verified either:</p>
+      <ul>
+        <li>Open <strong>Audio MIDI Setup</strong>, select the device, and set its input format to 48000&nbsp;Hz so both directions match.</li>
+        <li>In <code>winecfg</code>'s Audio tab, set the input device to none — a game does not need a microphone, and Wine then never opens the mismatched side.</li>
+      </ul>
+      <div class="note warn">
+        <span class="tag">Restart after changing</span>
+        <p>Wine reads the audio device once, at process start. Changing your Mac's output device while the game is running does nothing — quit and relaunch.</p>
+      </div>
+      <p>If Wine sees no output device at all, the driver itself did not load. Force it and look at the debug output:</p>
+      <pre><code>wine reg add "HKCU\Software\Wine\Drivers" /v Audio /t REG_SZ /d coreaudio /f
+WINEDEBUG=+coreaudio wine winecfg 2>&amp;1 | tail -40</code></pre>
+    </div>
+  </div>
+
+  <section id="trouble">
+    <h2>Troubleshooting</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Bottles listed but every click does nothing</td>
+            <td>Ghost entries — the bottle folder is no longer at the recorded path</td>
+            <td>Check <code>defaults read com.franke.Whisky</code> for <code>selectedBottleURL</code>, then confirm the folder exists</td>
+          </tr>
+          <tr>
+            <td>Bottle folder gone</td>
+            <td>Deleting a bottle in the UI moves it to the volume's trash, it does not erase it</td>
+            <td>Look in <code>/Volumes/&lt;name&gt;/.Trashes/$(id -u)/</code> before assuming it is lost</td>
+          </tr>
+          <tr>
+            <td>App runs from a path that doesn't exist</td>
+            <td>macOS App Translocation — a quarantined app runs from a random read-only copy</td>
+            <td><code>xattr -dr com.apple.quarantine</code> on the bundle, and keep it in <code>/Applications</code></td>
+          </tr>
+          <tr>
+            <td>steamwebhelper is not responding</td>
+            <td>Locale parsing crash in the CEF helper</td>
+            <td>Launcher Compatibility Mode on, <code>LC_ALL=en_US.UTF-8</code></td>
+          </tr>
+          <tr>
+            <td>Downloads stall near 99%</td>
+            <td>Wine's HTTP/2 implementation</td>
+            <td><code>WINE_FORCE_HTTP11=1</code>, network timeout 90&nbsp;s</td>
+          </tr>
+          <tr>
+            <td>Game runs, no sound</td>
+            <td>Input and output sample rates differ on the active device</td>
+            <td>Switch output to a device with matching rates and relaunch</td>
+          </tr>
+          <tr>
+            <td>Black window on launch</td>
+            <td>Graphics backend the title can't use</td>
+            <td>MetalFX off, then D3DMetal on with DXVK off for D3D12 titles</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="recovery">
+    <h2>Recovering a lost bottle</h2>
+    <p>This is the single most useful thing in the guide. Whisky, Finder and most cleanup tools do not delete folders on an external volume — they move them to a hidden per-user trash on that volume. A 39&nbsp;GB bottle with a full Steam install inside it survived exactly this way.</p>
+    <pre><code>U=$(id -u)
+sudo ls -la "/Volumes/MyDrive/.Trashes/$U/"
+sudo du -sh  "/Volumes/MyDrive/.Trashes/$U/"*/
+sudo find    "/Volumes/MyDrive/.Trashes/$U" -maxdepth 6 -iname "steam.exe"</code></pre>
+    <p>Bottles are named as UUIDs. Find the one with a <code>drive_c</code> inside, move it back, and fix the ownership the <code>sudo</code> left behind:</p>
+    <pre><code>U=$(id -u)
+B=D7A49FD1-A81B-426C-8D76-AF7155399261
+sudo mv "/Volumes/MyDrive/.Trashes/$U/$B" /Volumes/MyDrive/Whisky/Bottle/
+sudo chown -R "$(id -un):staff" "/Volumes/MyDrive/Whisky/Bottle/$B"</code></pre>
+    <div class="note ok">
+      <span class="tag">Check before you empty</span>
+      <p>Emptying the trash on a volume is irreversible and takes the bottles with it. Recover first, verify the setup works, and only then reclaim the space — there was over 100&nbsp;GB of recoverable bottles sitting in two volume trashes here.</p>
+    </div>
+  </section>
+
+  <footer>
+    <p>Tested on a Mac mini M4 running macOS 26.6.2 with Whisky 3.7.0 and Commandos: Origins. Your mileage will vary by title; check ProtonDB first.</p>
+    <ul>
+      <li><a href="https://github.com/frankea/Whisky">frankea/Whisky — the maintained fork</a></li>
+      <li><a href="https://github.com/frankea/Whisky/blob/main/docs/LauncherTroubleshooting.md">Launcher troubleshooting documentation</a></li>
+      <li><a href="https://www.protondb.com/">ProtonDB — compatibility reports</a></li>
+      <li><a href="https://developer.apple.com/news/?id=w5ngl9k2">Apple — upcoming changes to Rosetta support</a></li>
+      <li><a href="https://www.codeweavers.com/">CodeWeavers — CrossOver</a></li>
+    </ul>
+  </footer>
+
+</div>
+
+</body>
+</html>
