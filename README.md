@@ -13,7 +13,7 @@ evening: a bottle that vanished, and audio that was silently muted by a USB head
 | **Result** | Playable |
 
 A rendered version of this guide is at
-**[YOUR-USERNAME.github.io/whisky-steam-apple-silicon](https://YOUR-USERNAME.github.io/whisky-steam-apple-silicon/)**.
+**[d991d.github.io/WINDOWS-STEAM-ON-APPLE-SILICON](https://d991d.github.io/WINDOWS-STEAM-ON-APPLE-SILICON/)**.
 
 ---
 
@@ -124,7 +124,7 @@ logged in, then flip the graphics for play. These are the client settings:
 
 | Setting | Value | Why |
 |---|---|---|
-| Launcher Compatibility Mode | On | Added in 3.6.0; applies the fork's Steam profile |
+| Launcher Compatibility Mode | On | Applies the fork's Steam launcher profile |
 | Detection Mode | Automatic | Lets it identify Steam by itself |
 | Locale Override | English (en_US.UTF-8) | steamwebhelper crashes parsing dates in some locales |
 | Windows Version | Windows 10 | Documented baseline |
